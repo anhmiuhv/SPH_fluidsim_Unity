@@ -1,4 +1,5 @@
-//   SPH Fluid Dynamics for Unity3d.//
+//   SPH Fluid Dynamics for Unity3d.
+//
 //   Modul:             Fluid physics
 //
 //   Description:       Implementation of a evenly spaced spatial grid, used for fast fluid simulation
@@ -6,11 +7,12 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class IndexGrid {
+public class Grid {
 	public const int NeighbourCount = 8;
-	private ArrayList[][] m_grid;
+	private List<int>[][] m_grid;
 	public float CellSpace;
 	public Rect Domain;
 	public int Width;
@@ -19,22 +21,22 @@ public class IndexGrid {
 		get { return m_grid.Length; }
 	}
 	
-	public IndexGrid() {
+	public Grid() {
 		CellSpace = 8;
 		Domain = new Rect(0, 0, 256, 256);
 		initialize();
 	}
 	
-	public IndexGrid(float cellSpace, Rect domain) {
+	public Grid(float cellSpace, Rect domain) {
 		CellSpace = cellSpace;
 		Domain = domain;
 		initialize();
-		ArrayList zerol = new ArrayList();
+		List<mParticle> zerol = new List<mParticle>();
 		Refresh(ref zerol);
 		zerol = null;
 	}
 	
-	public IndexGrid(float cellSpace, Rect domain, ref ArrayList particles) {
+	public Grid(float cellSpace, Rect domain, ref List<mParticle> particles) {
 		CellSpace       = cellSpace;
 		Domain          = domain;
 		initialize();
@@ -44,33 +46,33 @@ public class IndexGrid {
 	private void initialize() {
 		Width           = (int)(Domain.width / this.CellSpace);
 		Height          = (int)(Domain.height / this.CellSpace);
-		m_grid = new ArrayList[Width][];
+		m_grid = new List<int>[Width][];
 	}
 	
-	public void Refresh(ref ArrayList particles) {
+	public void Refresh(ref List<mParticle> particles) {
 		
 		m_grid = null;
-		m_grid = new ArrayList[Width][];
+		m_grid = new List<int>[Width][];
 		
 		if (particles != null) {
             for (int i = 0; i < particles.Count; i++) {
-				FluidParticle p = (FluidParticle) particles[i];
+				mParticle p =  particles[i];
 				int gridIndexX = GetGridIndexX(ref p);
 				int gridIndexY = GetGridIndexY(ref p);
-				
+
 				// Add particle to list
 				if (m_grid[gridIndexX] == null) {
-					m_grid[gridIndexX] = new ArrayList[Height];
+					m_grid[gridIndexX] = new List<int>[Height];
 				}
 				if (m_grid[gridIndexX][gridIndexY] == null) {
-					m_grid[gridIndexX][gridIndexY] = new ArrayList();
+					m_grid[gridIndexX][gridIndexY] = new List<int>();
 				}
 				m_grid[gridIndexX][gridIndexY].Add(i);
             }
 		}
 	}
 	
-	private int GetGridIndexX(ref FluidParticle particle) {
+	private int GetGridIndexX(ref mParticle particle) {
 		
 		int gridIndexX = (int)(particle.Position.x / CellSpace);
 		// Clamp X
@@ -85,7 +87,7 @@ public class IndexGrid {
 		return gridIndexX;
 	}
 
-	private int GetGridIndexY(ref FluidParticle particle) {
+	private int GetGridIndexY(ref mParticle particle) {
 		
 		int gridIndexY = (int)(particle.Position.y / CellSpace);
 		// Clamp Y
@@ -100,7 +102,7 @@ public class IndexGrid {
 		return gridIndexY;
 	}
 	
-	public void GetNeighbourIndex(ref FluidParticle particle, out ArrayList neighbours) {
+	public void GetNeighbourIndex(ref mParticle particle, out List<int> neighbours) {
 		neighbours = null;
 		for (int xOff = -1; xOff < 2; xOff++) {
             for (int yOff = -1; yOff < 2; yOff++) {
@@ -111,10 +113,11 @@ public class IndexGrid {
 				// Clamp
 				if (x > -1 && x < this.Width && y > -1 && y < this.Height) {
 					if (m_grid[x] != null) {
-						ArrayList idxList = m_grid[x][y];
+						List<int> idxList = m_grid[x][y];
 						if (idxList != null) {
 							// Return neighbours index
-							neighbours = (ArrayList)idxList.Clone();
+
+							neighbours.AddRange(idxList);
 							return;
 						}
 					}
@@ -123,7 +126,7 @@ public class IndexGrid {
 		}
 	}
 	
-	public IEnumerable GetNeighbourIndex(FluidParticle particle) {
+	public IEnumerable GetNeighbourIndex(mParticle particle) {
 		for (int xOff = -1; xOff < 2; xOff++) {
             for (int yOff = -1; yOff < 2; yOff++) {
 				// Own index
@@ -134,7 +137,7 @@ public class IndexGrid {
 				if (x > -1 && x < this.Width && y > -1 && y < this.Height) {
 					if (m_grid[x] != null) {
 						if (m_grid[x][y] != null) {
-							ArrayList idxList = (ArrayList) m_grid[x][y].Clone();
+							List<int> idxList = new List<int> (m_grid[x][y]);
 							if (idxList != null) {
 								// Return neighbours index
 								foreach (int idx in m_grid[x][y]) {

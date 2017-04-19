@@ -5,10 +5,10 @@
 
 
 using System;
-using System.Collections;
+using System.Collections;using System.Collections.Generic;
 using UnityEngine;
 
-public class FluidParticleConsumer {
+public class ParticleConsummer {
 	
 	private float m_radiusSquared;
 	public Vector2 Position;
@@ -22,16 +22,16 @@ public class FluidParticleConsumer {
 	}
 	public bool Enabled;
 	
-	public FluidParticleConsumer() {
+	public ParticleConsummer() {
 		Position     = Vector2.zero;
 		Radius       = 1.0f;
 		Enabled      = true;
 	}
 	
-	public void Consume(ref ArrayList particles) {
+	public void Consume(ref List<mParticle> particles) {
 		if (this.Enabled) {
-            for (int i = particles.Count - 1; i >= 0; i--) {
-				float distSq = (((FluidParticle)particles[i]).Position - this.Position).sqrMagnitude;
+            for (int i = particles.Count - 1; i >= 0;i--) {
+				float distSq = ((particles[i]).Position - this.Position).sqrMagnitude;
 				if (distSq < m_radiusSquared) {
 					particles.RemoveAt(i);
 				}

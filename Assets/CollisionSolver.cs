@@ -6,18 +6,18 @@
 //
 
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class CollisionResolver {
+public class CollisionSolver {
 
-	public ArrayList BoundingVolumes;
+	public List<BoundingVolume> BoundingVolumes;
 	public float Bounciness;
 	public float Friction;
 	
 
-	public CollisionResolver() {
-		BoundingVolumes = new ArrayList();
+	public CollisionSolver() {
+		BoundingVolumes = new List<BoundingVolume>();
 		Bounciness      = 1.0f;
 		Friction        = 0.0f;
 	}
@@ -45,12 +45,12 @@ public class CollisionResolver {
 		return hasCollided;
 	}
 	
-	public bool Solve(ref ArrayList particles) {
+	public bool Solve(ref List<mParticle> particles) {
 		bool hasCollided = false;
 		Vector2 penetration, penNormal, v, vn, vt;
 		float penLen, dp;
 		foreach (BoundingVolume bv in BoundingVolumes) {
-            foreach (FluidParticle particle in particles) {
+            foreach (mParticle particle in particles) {
 				if (bv.Intersects(particle.BoundingVolume, out penNormal, out penLen)) {
 					hasCollided = true;
 					penetration = penNormal * penLen;
@@ -59,13 +59,7 @@ public class CollisionResolver {
 					}
 					else {
 						particle.BoundingVolume.Position -= penetration;
-						// Calc new velocity using elastic collision with friction
-						// -> Split oldVelocity in normal and tangential component, revert normal component and add it afterwards
-						// v = pos - oldPos;
-						//vn = n * Vector2.Dot(v, n) * -Bounciness;
-						//vt = t * Vector2.Dot(v, t) * (1.0f - Friction);
-						//v = vn + vt;
-						//oldPos = pos - v;
+
 						v = particle.Position - particle.PositionOld;
 						// eq penNormal.PerpendicularRight.
 						// see: http://opentk.svn.sourceforge.net/viewvc/opentk/trunk/Source/OpenTK/Math/Vector2.cs?revision=2530&view=markup

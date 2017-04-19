@@ -8,7 +8,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-public class EulerExplicit : Solver {
+public class Euler : Solver {
 	
 	public override void Solve(ref Vector2 position, ref Vector2 positionOld, ref Vector2 velocity, Vector2 acceleration, float timeStep) {
 		Vector2 t;
@@ -25,7 +25,7 @@ public class EulerExplicit : Solver {
 	}
 	
 	
-	public EulerExplicit() {
+	public Euler() {
 	}
 	
 }

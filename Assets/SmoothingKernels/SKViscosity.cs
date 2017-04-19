@@ -31,9 +31,9 @@ public class SKViscosity : SmoothingKernel {
 		{
             return 0.0f;
 		}
-		if (lenSq < Constants.SingleEpsilon)
+		if (lenSq < Constants.SmallEpsilon)
 		{
-            lenSq = Constants.SingleEpsilon;
+            lenSq = Constants.SmallEpsilon;
 		}
 		float len = (float)Math.Sqrt((double)lenSq);
 		float len3 = len * len * len;
@@ -50,9 +50,9 @@ public class SKViscosity : SmoothingKernel {
 		{
             return 0.0f;
 		}
-		if (lenSq < Constants.SingleEpsilon)
+		if (lenSq < Constants.SmallEpsilon)
 		{
-            lenSq = Constants.SingleEpsilon;
+            lenSq = Constants.SmallEpsilon;
 		}
 		float len = (float)Math.Sqrt((double)lenSq);
 		return m_factor * (6.0f / m_kernelSize3) * (m_kernelSize - len);

@@ -34,9 +34,9 @@ public class SKPoly6 : SmoothingKernel {
 		{
             return 0.0f;
 		}
-		if (lenSq < Constants.SingleEpsilon)
+		if (lenSq < Constants.SmallEpsilon)
 		{
-            lenSq = Constants.SingleEpsilon;
+            lenSq = Constants.SmallEpsilon;
 		}
 		float diffSq = m_kernelSizeSq - lenSq;
 		return m_factor * diffSq * diffSq * diffSq;
@@ -48,9 +48,9 @@ public class SKPoly6 : SmoothingKernel {
 		{
             return new Vector2(0.0f, 0.0f);
 		}
-		if (lenSq < Constants.SingleEpsilon)
+		if (lenSq < Constants.SmallEpsilon)
 		{
-            lenSq = Constants.SingleEpsilon;
+            lenSq = Constants.SmallEpsilon;
 		}
 		float diffSq = m_kernelSizeSq - lenSq;
 		float f = -m_factor * 6.0f * diffSq * diffSq;

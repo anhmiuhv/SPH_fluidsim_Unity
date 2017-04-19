@@ -22,7 +22,8 @@ public static class Constants {
 	public const int PrimeNumber01                           = 73856093;
 	public const int PrimeNumber02                           = 19349663;
 	public const int PrimeNumber03                           = 83492791;
-	
-	public const float SingleEpsilon                         = 1.192092896e-07f;
+
+	public static float mRadialViscosityGain 				= 0.2f;
+	public const float SmallEpsilon                         = 1.192092896e-07f;
 }
 

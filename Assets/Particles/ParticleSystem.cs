@@ -4,18 +4,18 @@
 //   Description:       A particle system, containing a List of ParticleEmitters
 
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ParticleSystem {
 	
 	private bool m_wasMaxReached;
-	public ArrayList Particles;
-	public ArrayList Emitters;
+	public List<mParticle> Particles;
+	public List<ParticleEmitter> Emitters;
 	public bool HasEmitters {
 		get { return Emitters != null && Emitters.Count > 0; }
 	}
-	public ArrayList Consumers;
+	public List<ParticleConsummer> Consumers;
 	public bool HasConsumers {
 		get { return Consumers != null && Consumers.Count > 0; }
 	}
@@ -24,8 +24,8 @@ public class ParticleSystem {
 	public bool DoRebirth;
 	
 	public ParticleSystem() {
-		Emitters        = new ArrayList();
-		Consumers       = new ArrayList();
+		Emitters        = new List<ParticleEmitter>();
+		Consumers       = new List<ParticleConsummer>();
 		MaxLife         = 1024;
 		MaxParticles    = 500;
 		DoRebirth       = true;
@@ -33,7 +33,7 @@ public class ParticleSystem {
 	}
 	
 	public void Reset() {
-		Particles       = new ArrayList(MaxParticles);
+		Particles       = new List<mParticle>(MaxParticles);
 		m_wasMaxReached = false;
 	}
 	
@@ -42,7 +42,7 @@ public class ParticleSystem {
 		// Consume particles in a certain range
 		if (this.HasConsumers) {
 			for (int i = 0; i < Consumers.Count; i++) {
-				FluidParticleConsumer consumer = (FluidParticleConsumer) Consumers[i];
+				ParticleConsummer consumer = Consumers[i];
 				consumer.Consume(ref Particles);
             }
 		}
@@ -54,7 +54,7 @@ public class ParticleSystem {
 			if (this.HasEmitters) {
 				// Emit new particles
 				for (int i = 0; i < Emitters.Count; i++) {
-					FluidParticleEmitter emitter = (FluidParticleEmitter) Emitters[i];
+					ParticleEmitter emitter =  Emitters[i];
 					emitter.Emit(ref Particles, dTime);
 				}
             }
@@ -64,8 +64,8 @@ public class ParticleSystem {
 		}
 	}
 	
-	public static ArrayList Create(int nParticles, float cellSpace, Rect domain, float particleMass) {
-		ArrayList particles = new ArrayList(nParticles);
+	public static List<mParticle> Create(int nParticles, float cellSpace, Rect domain, float particleMass) {
+		List<mParticle> particles = new List<mParticle>(nParticles);
 		// Init. Particle positions
 		float x0 = domain.x + cellSpace;
 		float x = x0;
@@ -75,7 +75,7 @@ public class ParticleSystem {
 				y += cellSpace;
             }
             Vector2 pos = new Vector2(x, y);
-			FluidParticle p = new FluidParticle();
+			mParticle p = new mParticle();
 			p.Position = pos;
 			p.PositionOld = pos;
 			p.Mass = particleMass;

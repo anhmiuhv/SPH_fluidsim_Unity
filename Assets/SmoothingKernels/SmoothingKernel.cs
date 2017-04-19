@@ -1,4 +1,5 @@
-//   SPH Fluid Dynamics for Unity3d.//
+//   SPH Fluid Dynamics for Unity3d.
+//
 //   Modul:             Fluid physics
 //
 //   Description:       Abstract base class of a Smoothing-Kernel for SPH-based fluid simulation

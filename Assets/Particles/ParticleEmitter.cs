@@ -7,25 +7,24 @@
 //
 
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class FluidParticleEmitter {
+public class ParticleEmitter {
 	
-	private UnityEngine.Random m_randGen;
-	private Vector2 m_direction;
-	private double m_time;
+	private Vector2 direction;
+	private double time;
 	
 	public Vector2 Position;
 	public Vector2 Direction
 	{
-		get { return m_direction; }
+		get { return direction; }
 		set
 		{
-            m_direction = value;
-			Vector3 dir = new Vector3(m_direction.x, 0, m_direction.y);
+            direction = value;
+			Vector3 dir = new Vector3(direction.x, 0, direction.y);
             dir.Normalize();
-			m_direction = new Vector2(dir.x, dir.z);
+			direction = new Vector2(dir.x, dir.z);
 		}
 	}
 	public float Distribution;
@@ -35,7 +34,7 @@ public class FluidParticleEmitter {
 	public float ParticleMass;
 	public bool Enabled;
 	
-	public FluidParticleEmitter() {
+	public ParticleEmitter() {
 		Position        = Vector2.zero;
 		VelocityMin     = 0.0f;
 		VelocityMax     = this.VelocityMin;
@@ -46,11 +45,11 @@ public class FluidParticleEmitter {
 		Enabled         = true;
 	}
 	
-	public void Emit(ref ArrayList particles, double dTime) {
+	public void Emit(ref List<mParticle> particles, double dTime) {
 		if (this.Enabled) {
             // Calc particle count based on frequency
-            m_time += dTime;
-            int nParts = (int)(this.Frequency * m_time);
+            time += dTime;
+            int nParts = (int)(this.Frequency * time);
             if (nParts > 0) {
 				// Create Particles
 				for (int i = 0; i < nParts; i++) {
@@ -59,23 +58,21 @@ public class FluidParticleEmitter {
 					Vector2 normal = new Vector2(Direction.y, -Direction.x);
 					normal = normal * dist;
 					Vector2 vel = Direction + normal;
-					Vector3 vel3 = new Vector3(vel.x, 0, vel.y);
-					vel3.Normalize();
-					vel = new Vector2(vel3.x, vel3.z);
+					vel.Normalize ();
 					float velLen = UnityEngine.Random.value * (this.VelocityMax - this.VelocityMin) + this.VelocityMin;
 					vel = vel * velLen;
 					// Calc Oldpos (for right velocity) using simple euler
 					// oldPos = this.Position - vel * m_time;
-					Vector2 oldPos = this.Position - vel * (float)m_time;
-					FluidParticle f = new FluidParticle();
-					f.Position    = Position;
-					f.PositionOld = oldPos;
-					f.Velocity    = vel;
-					f.Mass        = ParticleMass;
-					particles.Add(f);
+					Vector2 oldPos = this.Position - vel * (float)time;
+					mParticle p = new mParticle();
+					p.Position    = Position;
+					p.PositionOld = oldPos;
+					p.Velocity    = vel;
+					p.Mass        = ParticleMass;
+					particles.Add(p);
 				}
 				// Reset time
-				m_time = 0.0;
+				time = 0.0;
             }
 		}
 	}

@@ -10,7 +10,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-public class FluidParticle {
+public class mParticle {
 	
 	public int Life;
 	public float Mass;
@@ -24,7 +24,7 @@ public class FluidParticle {
 	public Solver Solver;
 	public BoundingVolume BoundingVolume;
 	
-	public FluidParticle() {
+	public mParticle() {
 		Mass            = 1.0f;
 		Position        = Vector2.zero;
 		PositionOld     = this.Position;

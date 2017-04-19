@@ -31,9 +31,9 @@ public class SKSpiky : SmoothingKernel {
 		{
             return 0.0f;
 		}
-		if (lenSq < Constants.SingleEpsilon)
+		if (lenSq < Constants.SmallEpsilon)
 		{
-            lenSq = Constants.SingleEpsilon;
+            lenSq = Constants.SmallEpsilon;
 		}
 		float f = m_kernelSize - (float)Math.Sqrt((double)lenSq);
 		return m_factor * f * f * f;
@@ -45,9 +45,9 @@ public class SKSpiky : SmoothingKernel {
 		{
             return new Vector2(0.0f, 0.0f);
 		}
-		if (lenSq < Constants.SingleEpsilon)
+		if (lenSq < Constants.SmallEpsilon)
 		{
-            lenSq = Constants.SingleEpsilon;
+            lenSq = Constants.SmallEpsilon;
 		}
 		float len = (float)Math.Sqrt((double)lenSq);
 		float f = -m_factor * 3.0f * (m_kernelSize - len) * (m_kernelSize - len) / len;

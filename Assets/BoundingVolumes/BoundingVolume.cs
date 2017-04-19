@@ -16,7 +16,7 @@ public abstract class BoundingVolume {
 	
 	protected BoundingVolume() {
 		IsFixed = false;
-		Margin = Constants.SingleEpsilon;
+		Margin = Constants.SmallEpsilon;
 	}
 	
 	public abstract void Project(Vector2 axis, out float min, out float max);

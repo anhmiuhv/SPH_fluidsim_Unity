@@ -1,16 +1,26 @@
 //   SPH Fluid Dynamics for Unity3d.
 //
+
+//	Implementationtion reference from http://rlguy.com/sphfluidsim/index.html
+//  and many papers
+//
+//
 //   Modul:             Fluid physics
 //
 
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class SPHSimulation {
 
-	public IndexGrid m_grid;
+	public Grid m_grid;
 	public float CellSpace;
+	public float CellSpace2 {
+		get {
+			return CellSpace * CellSpace;
+		}
+	}
 	public Rect Domain;
 	public SmoothingKernel SKGeneral;
 	public SmoothingKernel SKPressure;
@@ -26,27 +36,27 @@ public class SPHSimulation {
 		CellSpace    = cellSpace;
 		Domain       = domain;
 		Viscosity    = Constants.Viscosity;
-		m_grid       = new IndexGrid(cellSpace, domain);
+		m_grid       = new Grid(cellSpace, domain);
 		SKGeneral    = new SKPoly6(cellSpace);
 		SKPressure   = new SKSpiky(cellSpace);
 		SKViscosity  = new SKViscosity(cellSpace);
 	}
 	
-	public void Calculate(ref ArrayList particles, Vector2 globalForce, float dTime) {
+	public void Calculate(ref List<mParticle> particles, Vector2 globalForce, float dTime) {
 		m_grid.Refresh(ref particles);
-		CalculatePressureAndDensities(ref particles, ref m_grid);
-		CalculateForces(ref particles, ref m_grid, globalForce);
+		PressureAndDensity(ref particles, ref m_grid);
+		Forces(ref particles, ref m_grid, globalForce);
 		UpdateParticles(ref particles, dTime);
-		CheckParticleDistance(ref particles, ref m_grid);
+		NoOverlapParticles(ref particles, ref m_grid);
 	}
 	
-	private void CalculatePressureAndDensities(ref ArrayList particles, ref IndexGrid grid) {
+	private void PressureAndDensity(ref List<mParticle> particles, ref Grid grid) {
 		Vector2 dist;
-		foreach (FluidParticle particle in particles) {
+		foreach (mParticle particle in particles) {
             particle.Density = 0.0f;
             foreach (int nIdx in grid.GetNeighbourIndex(particle)) {
-				if (particle != ((FluidParticle) particles[nIdx])) {
-					dist = particle.Position - ((FluidParticle) particles[nIdx]).Position;
+				if (particle != ( particles[nIdx])) {
+					dist = particle.Position - ( particles[nIdx]).Position;
 					particle.Density += particle.Mass * this.SKGeneral.Calculate(ref dist);
 				}
             }
@@ -54,43 +64,75 @@ public class SPHSimulation {
 		}
 	}
 	
-	private void CalculateForces(ref ArrayList particles, ref IndexGrid grid, Vector2 globalForce) {
+	private void Forces(ref List<mParticle> particles, ref Grid grid, Vector2 globalForce) {
 		Vector2 f, dist;
 		float scalar;
 		for (int i = 0; i < particles.Count; i++) {
-			FluidParticle p = (FluidParticle) particles[i];
+			mParticle p = particles[i];
             // Add global force to every particle
             p.Force += globalForce;
 
             foreach (int nIdx in grid.GetNeighbourIndex(p)) {
 				// Prevent double tests
 				if (nIdx < i) {
-					FluidParticle pn = (FluidParticle) particles[nIdx];
-					if (pn.Density > Constants.SingleEpsilon && p != pn) {
+					mParticle pn =  particles[nIdx];
+					if (pn.Density > Constants.SmallEpsilon && p != pn) {
 						dist = p.Position - pn.Position;
 
 						// pressure
-						// f = particles[nIdx].Mass * ((particles[i].Pressure + particles[nIdx].Pressure) / (2.0f * particles[nIdx].Density)) * WSpikyGrad(ref dist);
-						//scalar   = pn.Mass * (p.Pressure + pn.Pressure) / (2.0f * pn.Density);
-						//f        = SKPressure.CalculateGradient(ref dist);
-						//f        = f * scalar;
-						//p.Force    -= f;
-						//pn.Force   += f;
+
+						scalar   = pn.Mass * (p.Pressure + pn.Pressure) / (2.0f * pn.Density);
+						f        = SKPressure.CalculateGradient(ref dist);
+						f        = f * scalar;
+						p.Force    -= f;
+						pn.Force   += f;
 
 						// viscosity
 						// f = particles[nIdx].Mass * ((particles[nIdx].Velocity - particles[i].Velocity) / particles[nIdx].Density) * WViscosityLap(ref dist) * Constants.VISC0SITY;
-						scalar   = pn.Mass * this.SKViscosity.CalculateLaplacian(ref dist) * Viscosity * 1 / pn.Density;
-						f        = pn.Velocity - p.Velocity;
-						f = f * scalar;
-						p.Force    += f;
-						pn.Force   -= f;
+						if (false) {
+							scalar = pn.Mass * this.SKViscosity.CalculateLaplacian (ref dist) * Viscosity * 1 / pn.Density;
+							f = pn.Velocity - p.Velocity;
+							f = f * scalar;
+							p.Force += f;
+							pn.Force -= f;
+						} else {
+							Vector2 velA = p.Velocity;
+							float dist2   = dist.sqrMagnitude ;
+							if( dist2 < CellSpace2 )
+							{   // Particles are near enough to exchange velocity.
+								float length    = Mathf.Sqrt( dist2 ) ;
+								Vector2 sepDir  = dist / length ;
+								Vector2 velB    = pn.Velocity ;
+								Vector2 velDiff = velA - velB ;
+								float velSep  = Vector2.Dot(velDiff ,sepDir) ;
+
+								if( velSep < 0.0f )
+
+								{   // Particles are approaching.
+									float infl         = 1.0f - length / CellSpace ;
+									float velSepA      = Vector2.Dot(velA,sepDir) ;                           // vel of pcl A along sep dir.
+									float velSepB      = Vector2.Dot(velB ,sepDir) ;                           // vel of pcl B along sep dir.
+									float velSepTarget = ( velSepA + velSepB ) * 0.5f ;            // target vel along sep dir.
+									float diffSepA     = velSepTarget - velSepA ;                  // Diff btw A's vel and target.
+									float changeSepA   = Constants.mRadialViscosityGain * diffSepA * infl ;  // Amount of vel change to appl
+									Vector2  changeA      = changeSepA * sepDir ;                     // Velocity change to apply.
+
+									p.Force += changeA *p.Mass ;                                                    // Apply velocity change to A.
+
+									pn.Force -= changeA*p.Mass ;                                                    // Apply commensurate change to B.
+
+							}
+
+						}
+						}
+
 					}
 				}
             }
 		}
 	}
 	
-	private void UpdateParticles(ref ArrayList particles, float dTime) {
+	private void UpdateParticles(ref List<mParticle> particles, float dTime) {
 				
 		float r = Domain.xMax;
 		float l = Domain.x;
@@ -99,21 +141,21 @@ public class SPHSimulation {
 		float b = Domain.y;
 		
 		for (int i = 0; i < particles.Count; i++) {
-			FluidParticle particle = (FluidParticle) particles[i];
+			mParticle particle = particles[i];
 			// Update velocity + position using forces
 			particle.Update(dTime);
             // Clip positions to domain space
             if (particle.Position.x < l) {
-				particle.Position.x = l + Constants.SingleEpsilon;
+				particle.Position.x = l + Constants.SmallEpsilon;
             }
             else if (particle.Position.x > r) {
-				particle.Position.x = r - Constants.SingleEpsilon;
+				particle.Position.x = r - Constants.SmallEpsilon;
             }
             if (particle.Position.y < b) {
-				particle.Position.y = b + Constants.SingleEpsilon;
+				particle.Position.y = b + Constants.SmallEpsilon;
             }
             else if (particle.Position.y > t) {
-				particle.Position.y = t - Constants.SingleEpsilon;
+				particle.Position.y = t - Constants.SmallEpsilon;
             }
             
             // Reset force
@@ -121,19 +163,19 @@ public class SPHSimulation {
 		}
 	}
 	
-	private void CheckParticleDistance(ref ArrayList particles, ref IndexGrid grid) {
+	private void NoOverlapParticles(ref List<mParticle> particles, ref Grid grid) {
 		float minDist = .5f * CellSpace;
 		float minDistSq = minDist * minDist;
 		Vector2 dist;
 		for (int i = 0; i < particles.Count; i++) {
-			FluidParticle p = (FluidParticle) particles[i];
-            foreach (int nIdx in grid.GetNeighbourIndex(p)) {
-				FluidParticle pn = (FluidParticle) particles[nIdx];
+			mParticle p =  particles[i];
+            foreach (int idx in grid.GetNeighbourIndex(p)) {
+				mParticle pn =  particles[idx];
 				if (p != pn) {
 					dist = pn.Position - p.Position;
 					float distLenSq = dist.sqrMagnitude;
 					if (distLenSq < minDistSq) {
-						if (distLenSq > Constants.SingleEpsilon) {
+						if (distLenSq > Constants.SmallEpsilon) {
 							float distLen = (float)Math.Sqrt((double)distLenSq);
 							dist = dist * 0.5f * (distLen - minDist) / distLen;
 							pn.Position = pn.Position - dist;
