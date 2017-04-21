@@ -35,7 +35,6 @@ public class SPHSimulation {
 	public SPHSimulation(float cellSpace, Rect domain) {
 		CellSpace    = cellSpace;
 		Domain       = domain;
-		Viscosity    = Constants.Viscosity;
 		m_grid       = new Grid(cellSpace, domain);
 		SKGeneral    = new SKPoly6(cellSpace);
 		SKPressure   = new SKSpiky(cellSpace);
@@ -43,6 +42,8 @@ public class SPHSimulation {
 	}
 	
 	public void Calculate(ref List<mParticle> particles, Vector2 globalForce, float dTime) {
+		Viscosity    = Constants.mRadialViscosityGain;
+
 		m_grid.Refresh(ref particles);
 		PressureAndDensity(ref particles, ref m_grid);
 		Forces(ref particles, ref m_grid, globalForce);
@@ -89,41 +90,35 @@ public class SPHSimulation {
 
 						// viscosity
 						// f = particles[nIdx].Mass * ((particles[nIdx].Velocity - particles[i].Velocity) / particles[nIdx].Density) * WViscosityLap(ref dist) * Constants.VISC0SITY;
-						if (false) {
-							scalar = pn.Mass * this.SKViscosity.CalculateLaplacian (ref dist) * Viscosity * 1 / pn.Density;
-							f = pn.Velocity - p.Velocity;
-							f = f * scalar;
-							p.Force += f;
-							pn.Force -= f;
-						} else {
-							Vector2 velA = p.Velocity;
-							float dist2   = dist.sqrMagnitude ;
-							if( dist2 < CellSpace2 )
-							{   // Particles are near enough to exchange velocity.
-								float length    = Mathf.Sqrt( dist2 ) ;
-								Vector2 sepDir  = dist / length ;
-								Vector2 velB    = pn.Velocity ;
-								Vector2 velDiff = velA - velB ;
-								float velSep  = Vector2.Dot(velDiff ,sepDir) ;
 
-								if( velSep < 0.0f )
+						Vector2 velA = p.Velocity;
+						float dist2   = dist.sqrMagnitude ;
+						if( dist2 < CellSpace2 )
+						{   // Particles are near enough to exchange velocity.
+							float length    = Mathf.Sqrt( dist2 ) ;
+							Vector2 sepDir  = dist / length ;
+							Vector2 velB    = pn.Velocity ;
+							Vector2 velDiff = velA - velB ;
+							float velSep  = Vector2.Dot(velDiff ,sepDir) ;
 
-								{   // Particles are approaching.
-									float infl         = 1.0f - length / CellSpace ;
-									float velSepA      = Vector2.Dot(velA,sepDir) ;                           // vel of pcl A along sep dir.
-									float velSepB      = Vector2.Dot(velB ,sepDir) ;                           // vel of pcl B along sep dir.
-									float velSepTarget = ( velSepA + velSepB ) * 0.5f ;            // target vel along sep dir.
-									float diffSepA     = velSepTarget - velSepA ;                  // Diff btw A's vel and target.
-									float changeSepA   = Constants.mRadialViscosityGain * diffSepA * infl ;  // Amount of vel change to appl
-									Vector2  changeA      = changeSepA * sepDir ;                     // Velocity change to apply.
+							if( velSep < 0.0f )
 
-									p.Force += changeA *p.Mass ;                                                    // Apply velocity change to A.
+							{   // Particles are approaching.
+								float infl         = 1.0f - length / CellSpace ;
+								float velSepA      = Vector2.Dot(velA,sepDir) ;                           // vel of pcl A along sep dir.
+								float velSepB      = Vector2.Dot(velB ,sepDir) ;                           // vel of pcl B along sep dir.
+								float velSepTarget = ( velSepA + velSepB ) * 0.5f ;            // target vel along sep dir.
+								float diffSepA     = velSepTarget - velSepA ;                  // Diff btw A's vel and target.
+								float changeSepA   = Viscosity * diffSepA * infl ;  // Amount of vel change to appl
+								Vector2  changeA      = changeSepA * sepDir ;                     // Velocity change to apply.
 
-									pn.Force -= changeA*p.Mass ;                                                    // Apply commensurate change to B.
+								p.Force += changeA *p.Mass ;                                                    // Apply velocity change to A.
+
+								pn.Force -= changeA*p.Mass ;                                                    // Apply commensurate change to B.
 
 							}
 
-						}
+						
 						}
 
 					}
@@ -135,10 +130,10 @@ public class SPHSimulation {
 	private void UpdateParticles(ref List<mParticle> particles, float dTime) {
 				
 		float r = Domain.xMax;
-		float l = Domain.x;
+		float l = Domain.xMin;
 		// Rectangle contains coordinates inverse on y
 		float t = Domain.yMax;
-		float b = Domain.y;
+		float b = Domain.yMin;
 		
 		for (int i = 0; i < particles.Count; i++) {
 			mParticle particle = particles[i];

@@ -9,6 +9,8 @@ using UnityEngine;
 public class main: MonoBehaviour {
 
 	// Sim
+	private MeshGenerator generator= new MeshGenerator();
+	private MeshFilter filter;
 	private SPHSimulation fluidSim;
 	private Vector2 lGravity;
 	private ParticleSystem particleSystem;
@@ -55,6 +57,7 @@ public class main: MonoBehaviour {
 			   " CellSpace: " + Constants.CellSpace + " "
 		);
 		particles = new UnityEngine.ParticleSystem.Particle[1000];
+		filter = GetComponent<MeshFilter> ();
 	}
 	
 	public void Start() {
@@ -65,7 +68,7 @@ public class main: MonoBehaviour {
 		emitter = ps.emission;
 		// add Unity Particle Renderer
 		prenderer = GetComponent<ParticleSystemRenderer>();
-		prenderer.material.color = new Color(1f,.817f,.39f,1);
+		prenderer.material.color = new Color(1f,1f,1f,1);
 		defaultmat = prenderer.material;
 
 		
@@ -82,13 +85,15 @@ public class main: MonoBehaviour {
 		
 		// Update particle system
 		particleSystem.Update(Constants.TimeStepSeconds);
-		
+
 		// Solve collisions only for particles
 		collisionSolver.Solve(ref particleSystem.Particles);
 
 		// Do simulation
 		fluidSim.Calculate(ref particleSystem.Particles, lGravity, Constants.TimeStepSeconds);
 
+		Mesh mesh = generator.GenerateMesh (fluidSim.m_grid.getFluidMapCount(), Constants.CellSpace);
+		filter.mesh = mesh;
 
 		// align Unity Particles with simulated Particles ...
 		int d = particleSystem.Particles.Count - ps.particleCount;
@@ -103,6 +108,7 @@ public class main: MonoBehaviour {
 			particles[i].remainingLifetime = 1f;
 		}
 		ps.SetParticles (particles, particleSystem.MaxParticles);
+
 	}
 	
 	
@@ -122,7 +128,7 @@ public class main: MonoBehaviour {
 		}
 
 		Constants.mRadialViscosityGain =
-			GUI.HorizontalSlider(new Rect(10,60,200,20), Constants.mRadialViscosityGain, 0, 0.5f);
+			GUI.HorizontalSlider(new Rect(10,60,200,20), Constants.mRadialViscosityGain, 0, 10f);
 		GUI.Label(new Rect(10, 40, 200, 20), "Radial Vicousity Gain: " + Constants.mRadialViscosityGain);
 
 
@@ -173,13 +179,11 @@ public class main: MonoBehaviour {
 		Constants.Gravity = new Vector2(0, gravity*-1);
 		lGravity = Constants.Gravity * Constants.ParticleMass;
 		
-		fluidSim.Viscosity =
-			GUI.HorizontalSlider(new Rect(10,300,200,20), fluidSim.Viscosity, 0, 10);
-		GUI.Label(new Rect(10, 280, 200, 20), "Viscosity: " + fluidSim.Viscosity);
+
 		
 		Constants.GasConstant =
-			GUI.HorizontalSlider(new Rect(10,340,200,20), Constants.GasConstant, 0, 10);
-		GUI.Label(new Rect(10, 320, 200, 20), "GasConstant: " + Constants.GasConstant);
+			GUI.HorizontalSlider(new Rect(10,300,200,20), Constants.GasConstant, 0, 10);
+		GUI.Label(new Rect(10, 280, 200, 20), "GasConstant: " + Constants.GasConstant);
 		
 	}
 		
@@ -208,6 +212,22 @@ public class main: MonoBehaviour {
 			frames = 0;
 		}
 		
+	}
+
+	public void OnDrawGizmos(){
+		if (!Application.isPlaying) return;
+		for (int i = 0; i < fluidSim.m_grid.Width; i++) {
+			for (int j = 0; j < fluidSim.m_grid.Height; j++) {
+				if (fluidSim.m_grid.getParticleCountAt (i, j) != 0) {
+					if ((i + j) % 2 == 0) {
+						Gizmos.color = new Color (0, 0, 0, 0.5F);
+					} else
+						Gizmos.color = new Color (1, 1, 1, 0.5F);
+					Gizmos.DrawCube (new Vector3 (Constants.CellSpace * i + Constants.SimulationDomain.xMin, Constants.CellSpace * j + Constants.SimulationDomain.yMin, 0),
+						new Vector3 (Constants.CellSpace, Constants.CellSpace, 0));
+				}
+			}
+		}
 	}
 }
 

@@ -12,7 +12,7 @@ using UnityEngine;
 
 public class Grid {
 	public const int NeighbourCount = 8;
-	private List<int>[][] m_grid;
+	private List<int>[][] m_grid ;
 	public float CellSpace;
 	public Rect Domain;
 	public int Width;
@@ -44,8 +44,8 @@ public class Grid {
 	}
 	
 	private void initialize() {
-		Width           = (int)(Domain.width / this.CellSpace);
-		Height          = (int)(Domain.height / this.CellSpace);
+		Width           = (int)Mathf.Ceil(Domain.width / this.CellSpace);
+		Height          = (int)Mathf.Ceil(Domain.height / this.CellSpace);
 		m_grid = new List<int>[Width][];
 	}
 	
@@ -74,7 +74,7 @@ public class Grid {
 	
 	private int GetGridIndexX(ref mParticle particle) {
 		
-		int gridIndexX = (int)(particle.Position.x / CellSpace);
+		int gridIndexX = (int)((particle.Position.x - Constants.SimulationDomain.xMin) / CellSpace);
 		// Clamp X
 		if (gridIndexX < 0)
 		{
@@ -89,7 +89,7 @@ public class Grid {
 
 	private int GetGridIndexY(ref mParticle particle) {
 		
-		int gridIndexY = (int)(particle.Position.y / CellSpace);
+		int gridIndexY = (int)((particle.Position.y- Constants.SimulationDomain.yMin) / CellSpace);
 		// Clamp Y
 		if (gridIndexY < 0)
 		{
@@ -104,12 +104,14 @@ public class Grid {
 	
 	public void GetNeighbourIndex(ref mParticle particle, out List<int> neighbours) {
 		neighbours = null;
+		int x_ori = GetGridIndexX(ref particle);
+		int y_ori = GetGridIndexY(ref particle);
 		for (int xOff = -1; xOff < 2; xOff++) {
             for (int yOff = -1; yOff < 2; yOff++) {
 				// Own index
 				// Neighbour index
-				int x = GetGridIndexX(ref particle) + xOff;
-				int y = GetGridIndexY(ref particle) + yOff;
+				int x = x_ori + xOff;
+				int y = y_ori + yOff;
 				// Clamp
 				if (x > -1 && x < this.Width && y > -1 && y < this.Height) {
 					if (m_grid[x] != null) {
@@ -127,12 +129,15 @@ public class Grid {
 	}
 	
 	public IEnumerable GetNeighbourIndex(mParticle particle) {
+		int x_ori = GetGridIndexX(ref particle);
+		int y_ori = GetGridIndexY(ref particle);
 		for (int xOff = -1; xOff < 2; xOff++) {
             for (int yOff = -1; yOff < 2; yOff++) {
 				// Own index
 				// Neighbour index
-				int x = GetGridIndexX(ref particle) + xOff;
-				int y = GetGridIndexY(ref particle) + yOff;
+
+				int x = x_ori + xOff;
+				int y = y_ori + yOff;
 				// Clamp
 				if (x > -1 && x < this.Width && y > -1 && y < this.Height) {
 					if (m_grid[x] != null) {
@@ -150,6 +155,28 @@ public class Grid {
 				}
             }
 		}
+	}
+
+	public int getParticleCountAt(int col, int row) {
+		if (Time.realtimeSinceStartup < 10)
+			return 0;
+		if (m_grid [col] == null || m_grid [col] [row] == null)
+			return 0;
+		
+		return m_grid [col] [row].Count;
+	}
+
+	public int[,] getFluidMapCount() {
+		int[,] map = new int[Width, Height];
+		for (int i = 0; i < Width; i++) {
+			for (int j = 0; j < Height; j++) { 
+				if (getParticleCountAt (i, j) != 0) {
+					map [i,j] = 1;
+				} else
+					map [i,j] = 0;
+			}
+		}
+		return map;
 	}
 	
 }
