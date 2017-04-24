@@ -53,15 +53,17 @@ public class SPHSimulation {
 	
 	private void PressureAndDensity(ref List<mParticle> particles, ref Grid grid) {
 		Vector2 dist;
+        int index = 0;
 		foreach (mParticle particle in particles) {
             particle.Density = 0.0f;
-            foreach (int nIdx in grid.GetNeighbourIndex(particle)) {
+            foreach (int nIdx in grid.GetNeighbourIndex(particle, index)) {
 				if (particle != ( particles[nIdx])) {
 					dist = particle.Position - ( particles[nIdx]).Position;
 					particle.Density += particle.Mass * this.SKGeneral.Calculate(ref dist);
 				}
             }
             particle.UpdatePressure();
+            index++;
 		}
 	}
 	
@@ -73,7 +75,7 @@ public class SPHSimulation {
             // Add global force to every particle
             p.Force += globalForce;
 
-            foreach (int nIdx in grid.GetNeighbourIndex(p)) {
+            foreach (int nIdx in grid.GetNeighbourIndex(p, i)) {
 				// Prevent double tests
 				if (nIdx < i) {
 					mParticle pn =  particles[nIdx];
@@ -112,9 +114,9 @@ public class SPHSimulation {
 								float changeSepA   = Viscosity * diffSepA * infl ;  // Amount of vel change to appl
 								Vector2  changeA      = changeSepA * sepDir ;                     // Velocity change to apply.
 
-								p.Force += changeA *p.Mass ;                                                    // Apply velocity change to A.
+								p.Force += (changeA  - Constants.Friction * p.Velocity) * p.Mass;                                                    // Apply velocity change to A.
 
-								pn.Force -= changeA*p.Mass ;                                                    // Apply commensurate change to B.
+								pn.Force -= (changeA - Constants.Friction * p.Velocity) * p.Mass ;                                                    // Apply commensurate change to B.
 
 							}
 
@@ -164,7 +166,7 @@ public class SPHSimulation {
 		Vector2 dist;
 		for (int i = 0; i < particles.Count; i++) {
 			mParticle p =  particles[i];
-            foreach (int idx in grid.GetNeighbourIndex(p)) {
+            foreach (int idx in grid.GetNeighbourIndex(p,i)) {
 				mParticle pn =  particles[idx];
 				if (p != pn) {
 					dist = pn.Position - p.Position;

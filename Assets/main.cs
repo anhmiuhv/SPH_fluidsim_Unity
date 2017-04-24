@@ -3,7 +3,9 @@
 //
 
 using System;
+using System.Linq;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class main: MonoBehaviour {
@@ -24,7 +26,6 @@ public class main: MonoBehaviour {
 	private UnityEngine.ParticleSystem.Particle[] particles;
 	private GameObject cam;
 	private Material defaultmat;
-
 	public void Awake() {
 		// Init simulation
 		lGravity = Constants.Gravity * Constants.ParticleMass;
@@ -58,6 +59,7 @@ public class main: MonoBehaviour {
 		);
 		particles = new UnityEngine.ParticleSystem.Particle[1000];
 		filter = GetComponent<MeshFilter> ();
+
 	}
 	
 	public void Start() {
@@ -65,6 +67,8 @@ public class main: MonoBehaviour {
 		
 
 		ps = GetComponent<UnityEngine.ParticleSystem> ();
+        var main = ps.main;
+        main.startSize = Constants.Radius;
 		emitter = ps.emission;
 		// add Unity Particle Renderer
 		prenderer = GetComponent<ParticleSystemRenderer>();
@@ -92,7 +96,7 @@ public class main: MonoBehaviour {
 		// Do simulation
 		fluidSim.Calculate(ref particleSystem.Particles, lGravity, Constants.TimeStepSeconds);
 
-		Mesh mesh = generator.GenerateMesh (fluidSim.m_grid.getFluidMapCount(), Constants.CellSpace);
+		Mesh mesh = generator.GenerateMesh (fluidSim.m_grid.getFluidMapCount (), Constants.CellSpace);
 		filter.mesh = mesh;
 
 		// align Unity Particles with simulated Particles ...
@@ -133,7 +137,7 @@ public class main: MonoBehaviour {
 
 
 		particleSystem.MaxParticles =
-			(int) GUI.HorizontalSlider(new Rect(10,100,200,20), particleSystem.MaxParticles, 0, 500);
+			(int) GUI.HorizontalSlider(new Rect(10,100,200,20), particleSystem.MaxParticles, 0, 1000);
 		
 		int pcount = particleSystem.Particles.Count;
 		int pmax = particleSystem.MaxParticles;
@@ -184,8 +188,12 @@ public class main: MonoBehaviour {
 		Constants.GasConstant =
 			GUI.HorizontalSlider(new Rect(10,300,200,20), Constants.GasConstant, 0, 10);
 		GUI.Label(new Rect(10, 280, 200, 20), "GasConstant: " + Constants.GasConstant);
-		
-	}
+
+        Constants.Friction =
+            GUI.HorizontalSlider(new Rect(10, 340, 200, 20), Constants.Friction, 0, 0.5f);
+        GUI.Label(new Rect(10, 320, 200, 20), "Dissipitation: " + Constants.Friction);
+
+    }
 		
 	public  float updateInterval = 0.5F;
 	
@@ -216,18 +224,20 @@ public class main: MonoBehaviour {
 
 	public void OnDrawGizmos(){
 		if (!Application.isPlaying) return;
+		generator.OnDrawGizmos ();
+		/*
 		for (int i = 0; i < fluidSim.m_grid.Width; i++) {
 			for (int j = 0; j < fluidSim.m_grid.Height; j++) {
-				if (fluidSim.m_grid.getParticleCountAt (i, j) != 0) {
 					if ((i + j) % 2 == 0) {
 						Gizmos.color = new Color (0, 0, 0, 0.5F);
 					} else
 						Gizmos.color = new Color (1, 1, 1, 0.5F);
 					Gizmos.DrawCube (new Vector3 (Constants.CellSpace * i + Constants.SimulationDomain.xMin, Constants.CellSpace * j + Constants.SimulationDomain.yMin, 0),
 						new Vector3 (Constants.CellSpace, Constants.CellSpace, 0));
-				}
+				
 			}
 		}
+		*/
 	}
 }
 

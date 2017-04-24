@@ -9,8 +9,9 @@ using UnityEngine;
 public static class Constants {
 
 	public const float DensityOffset                         = 100f;
-	public static float GasConstant                			 = 0.7f;//.1f;
-
+	public static float GasConstant                			 = 0.7f;
+    public static float Friction = 0.5f;
+    public static float Radius = 0.5f;
 	public static Vector2 Gravity                   		 = new Vector2(0.0f, -9.81f);
 	
 	public static readonly Rect SimulationDomain       		 = new Rect(-5f, -5f, 20f, 10f);

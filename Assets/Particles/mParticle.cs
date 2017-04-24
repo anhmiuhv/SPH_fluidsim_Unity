@@ -17,9 +17,11 @@ public class mParticle {
 	public Vector2 Position;
 	public Vector2 PositionOld;
 	public Vector2 Velocity;
+    public float heat;
 	public Vector2 Force;
 	public float Density;
 	public float Pressure;
+    public Vector2 grid_index;
 	
 	public Solver Solver;
 	public BoundingVolume BoundingVolume;

@@ -119,8 +119,8 @@ public class MeshGenerator : MonoBehaviour {
 		triangles.Add(c.vertexIndex);
 	}
 
-	void OnDrawGizmos() {
-		/*
+	public void OnDrawGizmos() {
+		
 		if (squareGrid != null) {
 			for (int x = 0; x < squareGrid.squares.GetLength(0); x ++) {
 				for (int y = 0; y < squareGrid.squares.GetLength(1); y ++) {
@@ -147,7 +147,7 @@ public class MeshGenerator : MonoBehaviour {
 				}
 			}
 		}
-		*/
+
 	}
 	
 	public class SquareGrid {
@@ -163,7 +163,7 @@ public class MeshGenerator : MonoBehaviour {
 
 			for (int x = 0; x < nodeCountX; x ++) {
 				for (int y = 0; y < nodeCountY; y ++) {
-					Vector3 pos = new Vector3(-mapWidth/2 + x * squareSize + squareSize/2, -mapHeight/2 + y * squareSize + squareSize/2,-2);
+					Vector3 pos = new Vector3(-mapWidth/2 + x * squareSize + squareSize/2 - Constants.SimulationDomain.xMin, -mapHeight/2 + y * squareSize + squareSize/2,-2);
 					controlNodes[x,y] = new ControlNode(pos,map[x,y] == 1, squareSize);
 				}
 			}
