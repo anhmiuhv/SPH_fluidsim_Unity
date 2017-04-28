@@ -1,0 +1,36 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel computeMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+// Particle's data
+struct eParticle
+{
+	float2 position;
+};
+
+struct grid {
+	float2 position;
+	float value;
+};
+
+int particle_length;
+
+// Particle's data, shared with the shader
+RWStructuredBuffer<eParticle> particleBuffer;
+RWStructuredBuffer<grid> field;
+
+[numthreads(512,1,1)]
+void computeMain (uint3 id : SV_DispatchThreadID)
+{
+	float radius2 = 0.8 * 0.8;
+	float dist;
+	int i = 0;
+	field[id.x].value = 0;
+	for (i = 0; i < particle_length; i++) {
+		dist = length(field[id.x].position - particleBuffer[i].position);
+		dist *= dist;
+		if (dist < radius2) 
+		field[id.x].value += (radius2 - dist) * (radius2 - dist);
+	}
+}

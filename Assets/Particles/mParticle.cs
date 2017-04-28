@@ -10,8 +10,19 @@ using System;
 using System.Collections;
 using UnityEngine;
 
+public struct smallParticle
+{
+    public Vector2 Position;
+    public smallParticle(Vector2 Position)
+    {
+        this.Position = Position;
+    }
+
+}
+
 public class mParticle {
 	
+    
 	public int Life;
 	public float Mass;
 	public Vector2 Position;
@@ -56,7 +67,7 @@ public class mParticle {
 	}
 	
 	public override int GetHashCode() {
-		return (int)(Position.x * Constants.PrimeNumber01) ^ (int)(Position.y * Constants.PrimeNumber02);
+		return (int)(Position.x * Constants.prime1) ^ (int)(Position.y * Constants.prime2);
 	}
 	
 	public override bool Equals(object obj) {
@@ -65,6 +76,11 @@ public class mParticle {
 		}
 		return base.Equals(obj);
 	}
+
+    public smallParticle toE()
+    {
+        return new smallParticle(Position);
+    }
 	
 	
 }

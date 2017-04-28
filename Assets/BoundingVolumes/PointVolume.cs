@@ -8,7 +8,7 @@ using UnityEngine;
 
 public class PointVolume : BoundingVolume {
 	
-	public Vector2[] Axis;
+
 	
 	public PointVolume() {
 		this.Position = Vector2.zero;

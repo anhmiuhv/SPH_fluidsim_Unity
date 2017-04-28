@@ -1,4 +1,5 @@
-//   SPH Fluid Dynamics for Unity3d.//
+//   SPH Fluid Dynamics for Unity3d.
+//
 //   Modul:             Fluid physics
 //
 //   Description:       A particle system, containing a List of ParticleEmitters
@@ -27,7 +28,7 @@ public class ParticleSystem {
 		Emitters        = new List<ParticleEmitter>();
 		Consumers       = new List<ParticleConsummer>();
 		MaxLife         = 1024;
-		MaxParticles    = 500;
+		MaxParticles    = 1000;
 		DoRebirth       = true;
 		Reset();
 	}
