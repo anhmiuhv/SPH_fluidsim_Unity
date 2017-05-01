@@ -13,7 +13,7 @@ Features:
 * Objects - Fluid colliders support
 
 Particle view
-<img src="https://raw.githubusercontent.com/anhmiuhv/SPH_fluidsim_Unity/master/particle.PNG"  />
+<img src="https://raw.githubusercontent.com/anhmiuhv/SPH_fluidsim_Unity/master/Resourses/particle.png"  />
 
 Mesh View
-<img src="https://raw.githubusercontent.com/anhmiuhv/SPH_fluidsim_Unity/master/mesh.PNG"  />
+<img src="https://raw.githubusercontent.com/anhmiuhv/SPH_fluidsim_Unity/master/Resourses/mesh.png"  />
