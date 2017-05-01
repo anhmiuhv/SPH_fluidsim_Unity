@@ -99,10 +99,15 @@ public class SPHSimulation {
 						p.Force    -= f;
 						pn.Force   += f;
 
-						// viscosity
-						// f = particles[nIdx].Mass * ((particles[nIdx].Velocity - particles[i].Velocity) / particles[nIdx].Density) * WViscosityLap(ref dist) * Constants.VISC0SITY;
-
-						Vector2 velA = p.Velocity;
+                        // viscosity
+                        // f = particles[nIdx].Mass * ((particles[nIdx].Velocity - particles[i].Velocity) / particles[nIdx].Density) * WViscosityLap(ref dist) * Constants.VISC0SITY;
+                        /*
+                        scalar = pn.Mass * this.SKViscosity.CalculateLaplacian(ref dist) * Viscosity * 1 / pn.Density;
+                        +f = pn.Velocity - p.Velocity;
+                        +f = f * scalar;
+                        +p.Force += f;
+                        +pn.Force -= f;*/
+                        Vector2 velA = p.Velocity;
 						float dist2   = dist.sqrMagnitude ;
 						if( dist2 < CellSpace2 )
 						{   // Particles are near enough to exchange velocity.

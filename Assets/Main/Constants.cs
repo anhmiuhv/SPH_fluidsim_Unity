@@ -35,9 +35,11 @@ public static class Constants {
     public static int SIZE_GRID = 12;
 	#if UNITY_STANDALONE_OSX
     public static int WARP_SIZE = 512;
-	#endif
-	#if UNITY_STANDALONE_WIN
+	#elif UNITY_STANDALONE_WIN
 	public static int WARP_SIZE = 1024;
+	#else
+	public static int WARP_SIZE = 512;
+
 	#endif
 
 }

@@ -1,6 +1,7 @@
 # =============== #
 # Unity generated #
 # =============== #
+ios/
 *.app
 [Tt]emp/
 [Oo]bj/

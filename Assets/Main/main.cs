@@ -117,10 +117,10 @@ public class main : MonoBehaviour
         gridBuffer.SetData(gridArray);
 
         // Find the id of the kernel
-		#if UNITY_STANDALONE_OSX
+#if UNITY_STANDALONE_OSX
 		mComputeShaderKernelID = computeShader.FindKernel("computeMain");
-		#endif
-		#if UNITY_STANDALONE_WIN
+#endif
+#if UNITY_STANDALONE_WIN
 		mComputeShaderKernelID = computeShader.FindKernel("CSMain");
 		#endif
         computeShader.SetBuffer(mComputeShaderKernelID, "field", gridBuffer);
@@ -195,7 +195,7 @@ public class main : MonoBehaviour
             int[,] f = Helper.Make2DArray<int>(field, fluidSim.m_grid.Width * Constants.resolution + 1, fluidSim.m_grid.Height * Constants.resolution + 1);
             renderer.GetComponent<MeshRenderer>().enabled = true;
             Mesh mesh = generator.GenerateMesh(f, Constants.CellSpace / Constants.resolution);
-            
+            mesh = mattatz.MeshSmoothingSystem.MeshSmoothing.LaplacianFilter(mesh);
             filter.mesh = mesh;
 
 
